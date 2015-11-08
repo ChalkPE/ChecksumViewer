@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 ChalkPE
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package pe.chalk.checksum.viewer;
 
 import javafx.application.Application;
@@ -61,16 +77,14 @@ public class ChecksumViewer extends Application {
         algorithm.valueProperty().addListener(textListener);
         input.textProperty().addListener(textListener);
 
-        ChangeListener<Boolean> copyListener = (observable, oldValue, newValue) -> {
+        output.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue){
                 ClipboardContent content = new ClipboardContent();
                 content.putString(output.getText());
 
                 Clipboard.getSystemClipboard().setContent(content);
             }
-        };
-
-        output.focusedProperty().addListener(copyListener);
+        });
 
         BorderPane root = new BorderPane();
 
@@ -86,13 +100,12 @@ public class ChecksumViewer extends Application {
 
     public static String getCipher(String algorithm, String plaintext){
         try{
-            MessageDigest md = MessageDigest.getInstance(algorithm);
-            md.update(plaintext.getBytes());
+            MessageDigest digest = MessageDigest.getInstance(algorithm);
+            digest.update(plaintext.getBytes());
 
             StringBuilder result = new StringBuilder();
-            for (byte b : md.digest()){
-                result.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-            }
+            for(byte b: digest.digest()) result.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+
             return result.toString();
         }catch(NoSuchAlgorithmException e){
             return "[ERROR] No such algorithm!";
